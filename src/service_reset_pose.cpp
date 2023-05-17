@@ -48,7 +48,7 @@ void check_pose(){
 
 int main(int argc, char **argv) {
 	
-	ros::init(argc, argv, "show_pose_topic");
+	ros::init(argc, argv, "service_reset_pose");
 	ros::NodeHandle nh;
 	ros::Subscriber pose_sub = nh.subscribe("turtle1/pose", 1, poseCallback);
 	ros::ServiceClient reset = nh.serviceClient<std_srvs::Empty>("reset");

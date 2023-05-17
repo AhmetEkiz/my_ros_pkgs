@@ -136,6 +136,8 @@ include_directories(
 add_executable(show_pose_topic src/show_pose_topic.cpp)
 add_executable(show_changes_pose src/show_changes_pose.cpp)
 add_executable(service_reset_pose src/service_reset_pose.cpp)
+add_executable(move_linear src/move_linear.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,6 +156,8 @@ add_executable(service_reset_pose src/service_reset_pose.cpp)
 target_link_libraries(show_pose_topic ${catkin_LIBRARIES})
 target_link_libraries(show_changes_pose ${catkin_LIBRARIES})
 target_link_libraries(service_reset_pose ${catkin_LIBRARIES})
+target_link_libraries(move_linear ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##

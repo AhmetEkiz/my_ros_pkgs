@@ -1,4 +1,4 @@
-// move forward for 3 seconds
+// move forward with angle for 3 seconds
 
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
@@ -63,7 +63,8 @@ int main(int argc, char **argv) {
 
 	ROS_INFO("Program STARTED!");
 
-	speed.linear.x = 0.5;
+	speed.linear.x = 3;
+	speed.angular.z = 2;
 	int count = 0;
 
 	while (ros::ok())

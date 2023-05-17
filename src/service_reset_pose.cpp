@@ -4,9 +4,12 @@
 #include <turtlesim/Pose.h>
 #include <iostream> 
 
+#include <std_srvs/Empty.h>
+
 
 turtlesim::PoseConstPtr g_pose;
 turtlesim::PoseConstPtr g_pose_prev;  // previous g_pose 
+
 
 void poseCallback(const turtlesim::PoseConstPtr& pose)
 {
@@ -48,7 +51,11 @@ int main(int argc, char **argv) {
 	ros::init(argc, argv, "show_pose_topic");
 	ros::NodeHandle nh;
 	ros::Subscriber pose_sub = nh.subscribe("turtle1/pose", 1, poseCallback);
+	ros::ServiceClient reset = nh.serviceClient<std_srvs::Empty>("reset");
 	ros::Rate loop_rate(120);
+
+	std_srvs::Empty empty;
+	reset.call(empty);
 
 	ROS_INFO("Program STARTED!");
 

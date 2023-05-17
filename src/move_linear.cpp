@@ -1,3 +1,4 @@
+// move forward for 3 seconds
 
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
@@ -11,8 +12,7 @@
 turtlesim::PoseConstPtr g_pose;
 turtlesim::PoseConstPtr g_pose_prev;  // previous g_pose 
 
-geometry_msgs::Twist speeds;   // speed of turtle
-
+geometry_msgs::Twist speed;
 
 void poseCallback(const turtlesim::PoseConstPtr& pose)
 {
@@ -20,9 +20,7 @@ void poseCallback(const turtlesim::PoseConstPtr& pose)
 }
 
 void show_pose(){
-	if(!g_pose){
-		ROS_INFO("Received pose:\n x:%f\n y:%f\n angular:%f\n linear:%f\n theta:%f", g_pose->x, g_pose->y, g_pose->angular_velocity, g_pose->linear_velocity, g_pose->theta);
-	}
+	ROS_INFO("Received pose:\n x:%f\n y:%f\n angular:%f\n linear:%f\n theta:%f", g_pose->x, g_pose->y, g_pose->angular_velocity, g_pose->linear_velocity, g_pose->theta);
 }
 
 void check_pose(){
@@ -53,10 +51,10 @@ void check_pose(){
 
 int main(int argc, char **argv) {
 	
-	ros::init(argc, argv, "move_linear");
+	ros::init(argc, argv, "show_changes_pose");
 	ros::NodeHandle nh;
 	ros::Subscriber pose_sub = nh.subscribe("turtle1/pose", 1, poseCallback);
-	ros::Publisher twist_pub = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 10);
+	ros::Publisher twist_pub = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
 	ros::ServiceClient reset = nh.serviceClient<std_srvs::Empty>("reset");
 	ros::Rate loop_rate(120);
 
@@ -65,23 +63,20 @@ int main(int argc, char **argv) {
 
 	ROS_INFO("Program STARTED!");
 
-	// show_pose();
+	speed.linear.x = 0.5;
+	int count = 0;
 
-	speeds.linear.x = 3;   // move forward
-	speeds.linear.y = 0;
-	speeds.linear.z = 0;
-	speeds.angular.x = 0;   // move forward
-	speeds.angular.y = 0;
-	speeds.angular.z = 0;
+	while (ros::ok())
+	{	
+		check_pose();
+		twist_pub.publish(speed);
+		ros::spinOnce();
+		loop_rate.sleep();
 
-	twist_pub.publish(speeds);  
-	ros::Duration(3).sleep();
-	speeds.linear.x = 0;   // stop
-	// show_pose();
-
-	// ros::spinOnce();
-
-
-
+		count++;
+		if(count==360){
+			break;
+		}
+	}
 	return 0;
 }

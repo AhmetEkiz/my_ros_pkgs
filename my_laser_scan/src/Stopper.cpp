@@ -4,6 +4,7 @@
 
 using namespace std;
 
+bool scan_came = false;
 
 Stopper::Stopper()
 {
@@ -14,6 +15,9 @@ Stopper::Stopper()
 	laserSub = node.subscribe("scan", 1, &Stopper::scanCallback, this);
 }
 
+
+// MOVING FUNCTIONS
+
 // Send a velocity command
 void Stopper::moveForward() {
 	geometry_msgs::Twist msg; // The default constructor will set all commands to 0
@@ -21,50 +25,168 @@ void Stopper::moveForward() {
 	commandPub.publish(msg);
 };
 
+// stop the vehicle
+void Stopper::stop(){
+	geometry_msgs::Twist msg; // The default constructor will set all commands to 0
+	msg.linear.x = 0;
+	msg.angular.z = 0;
+	commandPub.publish(msg);
+};
 
-// Process the incoming laser scan message
-void Stopper::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
-{
-	// Find the closest range between the defined minimum and maximum angles
-	// int minIndex = ceil((MIN_SCAN_ANGLE_RAD - scan->angle_min) / scan->angle_increment);
-	// int maxIndex = floor((MAX_SCAN_ANGLE_RAD - scan->angle_min) / scan->angle_increment);
-
-	int	minIndex = 0;
-	int maxIndex = 359;
-
-	ROS_INFO("\nminIndex: %d\nmaxIndex: %d",minIndex, maxIndex);
-
-	float closestRange = scan->ranges[minIndex];
+// turn vehicle left or right
+void Stopper::turn(){
 	
+	geometry_msgs::Twist msg; // The default constructor will set all commands to 0
+	msg.linear.x = 0;
+
+	//Converting from angles to radians
+ 	float angular_speed = FORWARD_SPEED_MPS*2*PI/360;
+ 	float relative_angle = angle*2*PI/360;
+
+	if(v_state == TURN_LEFT){
+		msg.angular.z = +relative_angle;
+	}
+	else if(v_state == TURN_RIGHT){
+		msg.angular.z = -relative_angle;
+	}
+
+	double t0 = ros::Time::now().toSec();
+	double t1;
+	float current_angle = 0;
+
+	while(current_angle < relative_angle){
+  		commandPub.publish(msg);
+		t1 = ros::Time::now().toSec();
+		current_angle = angular_speed*(t1-t0);
+	}
+
+
+	// // TODO: Check vehicle is in the right pose. 
+	// ros::Duration(duration_to_turn).sleep();  // wait until turn
+	stop();
+	v_state == FORWARD;
+};
+
+// FUNCTIONS
+
+// check given indexes' range is not closer than minimum proximity range
+void Stopper::check_empty(int index_start, int index_end){
+
+	ROS_INFO("check scan_ptr");
+	if(!scan_ptr){
+		ROS_INFO("checked scan_ptr");
+		float closestRange = find_closest(index_start, index_end);
+		
+		ROS_INFO_STREAM("Closest range: " << closestRange);
+
+		if (closestRange < MIN_PROXIMITY_RANGE_M) {
+			ROS_INFO("STOPPED!");
+			v_state = STOP_FORWARD;
+			stop();
+		}
+	}
+}
+
+void Stopper::check_front(){
+	check_empty(right_front_start, right_front_end);
+	check_empty(left_front_start, left_front_end);
+}
+
+// find closest range 
+float Stopper::find_closest(int minIndex, int maxIndex){
+	
+	ROS_INFO("Find closest started");
+	ROS_INFO("minIndex %d , maxIndex %d", minIndex, maxIndex);
+	ROS_INFO("Find closest started %f", scan_ptr->ranges[minIndex]);
+	float closestRange = scan_ptr->ranges[minIndex];
+	ROS_INFO("scan_ptr is not empty");
 	for (int currIndex = minIndex; currIndex <= maxIndex; currIndex++) {
 
-		// ROS_INFO("\n[CURRENT]\n Index: %d\n Range: %f", currIndex, scan->ranges[currIndex]);
-		// ROS_INFO("\n Index: %d Range: %f", currIndex, scan->ranges[currIndex]);
-		cout << "\n -- Index:" << currIndex << "  Range:" << scan->ranges[currIndex] << " -- ";
-
-		if (scan->ranges[currIndex] < closestRange) {
-			closestRange = scan->ranges[currIndex];
-			
+		if (scan_ptr->ranges[currIndex] < closestRange) {
+			closestRange = scan_ptr->ranges[currIndex];
 		}
 	}
 
-	ROS_INFO_STREAM("Closest range: " << closestRange);
+	return closestRange;
+	
+}
 
-	if (closestRange < MIN_PROXIMITY_RANGE_M) {
-		ROS_INFO("Stop!");
-		
-		// keepMoving = false;
+// decide which way to turn
+void Stopper::turn_sides(){
+
+	if(!scan_ptr){
+		float closestRange_left = find_closest(back_left, front_left);
+		float closestRange_right = find_closest(back_right, front_right);
+
+		if(closestRange_left>=closestRange_right){
+
+			check_empty(back_left, front_left);  //check left side is empty before going it
+
+			ROS_INFO("TURNING LEFT");
+			v_state = TURN_LEFT;
+		}
+
+		else if(closestRange_left<closestRange_right){
+
+			check_empty(back_right, front_right);   //check right side is empty before going it
+
+			ROS_INFO("TURNING RIGHT");
+			v_state = TURN_RIGHT;
+		}
 	}
+
+}
+
+// Save laser scan message
+void Stopper::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
+{
+	ROS_INFO("scanCallback started");
+	scan_ptr = scan;
+	scan_came = true;
+	ROS_INFO("scanCallback ended");
 }
 
 void Stopper::startMoving()
 {
-	ros::Rate rate(10);
+	// while(!scan_came){
+	// 	ROS_INFO("waiting scan");
+	// 	ros::Duration(0.1).sleep();
+	// }
+
+	ros::Rate rate(30);
+	
 	ROS_INFO("Start moving");
 
 	// Keep spinning loop until user presses Ctrl+C or the robot got too close to an obstacle
-	while (ros::ok() && keepMoving) {
-		// moveForward();
+	while (ros::ok()) {
+		ROS_INFO("IN WHILE");
+		if(v_state == FORWARD && scan_came){
+			ROS_INFO("check front");
+			check_front();
+			ROS_INFO("checked front");
+			// if it is still FORWARD
+			if(v_state == FORWARD){
+				moveForward();
+				ROS_INFO("moved forward");
+			}
+		}
+
+		else if(v_state == STOP_FORWARD){
+		
+			turn_sides();
+		}
+
+		else if(v_state == TURN_LEFT || v_state == TURN_RIGHT){
+			turn();
+		}
+
+
+		else if(v_state == STOP){
+			stop();
+			ROS_INFO("Program stopped!");
+			break;   // break the program
+		}
+
 		ros::spinOnce(); // Need to call this function often to allow ROS to process incoming messages
 		rate.sleep();
 	}

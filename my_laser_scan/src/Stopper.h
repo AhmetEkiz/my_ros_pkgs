@@ -1,19 +1,51 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 
+enum State{
+	FORWARD,   // go forward
+	STOP_FORWARD,   // stop forward
+	TURN,  // need to turn, decide which way to turn
+	TURN_RIGHT, 
+	TURN_LEFT,
+	STOP_TURN,   // stop turn you were there
+	STOP,
+};
+
+
+
+const float PI = 3.1415926535897;
+
 class Stopper
 {
 public:
 	// Tunable parameters
-	static constexpr double FORWARD_SPEED_MPS = 0.5;
+	static constexpr double FORWARD_SPEED_MPS = 0.5;  // degree/sec
+	static constexpr double TURN_SPEED_MPS = 0.2;
+	const int duration_to_turn = 1;   // 1 second
+	const int angle = 90;  // angle to turn left or right
 
-	// front of the robot
-	static constexpr double MIN_SCAN_ANGLE_RAD = -30.0 / 180 * M_PI;
-	static constexpr double MAX_SCAN_ANGLE_RAD = +30.0 / 180 * M_PI;
+	static constexpr float MIN_PROXIMITY_RANGE_M = 0.3;  // Should be smaller than sensor_msgs::LaserScan::range_max
 
-	static constexpr float MIN_PROXIMITY_RANGE_M = 0.1;  // Should be smaller than sensor_msgs::LaserScan::range_max
+	// my constants for laser scan indexes
+	// FRONT
+	const int right_front_start = 0;
+	const int right_front_end = 5;
 
+	const int left_front_start = 352;
+	const int left_front_end = 359;
 
+	// LEFT 
+	const int front_left = 94;
+	const int back_left = 82;
+
+	// RIGHT
+	const int front_right = 276;
+	const int back_right = 264;
+
+	sensor_msgs::LaserScan::ConstPtr scan_ptr;
+
+	// bool turn = false;  // is it turning right now?
+	State v_state = FORWARD;   //vehicle state
 
 	Stopper();
 	void startMoving();
@@ -22,7 +54,15 @@ private:
 	ros::NodeHandle node;
 	ros::Publisher commandPub; // Publisher to the robot's velocity command topic
 	ros::Subscriber laserSub;  // Subscriber to the robot's laser scan topic
+
 	bool keepMoving;		   // Indicates whether the robot should continue moving
 	void moveForward();
+	void stop();
+	void turn();
+	void check_empty(int index_start, int index_end);
+	void check_front();
+	void turn_sides();
+	float find_closest(int minIndex, int maxIndexs);
 	void scanCallback(const sensor_msgs::LaserScan::ConstPtr &scan);
+	
 };

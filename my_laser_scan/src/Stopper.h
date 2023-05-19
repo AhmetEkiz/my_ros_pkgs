@@ -19,7 +19,7 @@ class Stopper
 {
 public:
 	// Tunable parameters
-	static constexpr double FORWARD_SPEED_MPS = 0.5;  // degree/sec
+	static constexpr double FORWARD_SPEED_MPS = 0.2;  // degree/sec
 	static constexpr double TURN_SPEED_MPS = 0.2;
 	const int duration_to_turn = 1;   // 1 second
 	const int angle = 90;  // angle to turn left or right

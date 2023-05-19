@@ -73,18 +73,18 @@ void Stopper::turn(){
 void Stopper::check_empty(int index_start, int index_end){
 
 	ROS_INFO("check scan_ptr");
-	if(!scan_ptr){
-		ROS_INFO("checked scan_ptr");
-		float closestRange = find_closest(index_start, index_end);
+	
+	ROS_INFO("checked scan_ptr");
+	float closestRange = find_closest(index_start, index_end);
 		
-		ROS_INFO_STREAM("Closest range: " << closestRange);
+	ROS_INFO_STREAM("Closest range: " << closestRange);
 
-		if (closestRange < MIN_PROXIMITY_RANGE_M) {
-			ROS_INFO("STOPPED!");
-			v_state = STOP_FORWARD;
-			stop();
-		}
+	if (closestRange < MIN_PROXIMITY_RANGE_M) {
+		ROS_INFO("STOPPED!");
+		v_state = STOP_FORWARD;
+		stop();
 	}
+	
 }
 
 void Stopper::check_front(){
@@ -95,11 +95,11 @@ void Stopper::check_front(){
 // find closest range 
 float Stopper::find_closest(int minIndex, int maxIndex){
 	
-	ROS_INFO("Find closest started");
-	ROS_INFO("minIndex %d , maxIndex %d", minIndex, maxIndex);
-	ROS_INFO("Find closest started %f", scan_ptr->ranges[minIndex]);
+	// ROS_INFO("Find closest started");
+	// ROS_INFO("minIndex %d , maxIndex %d", minIndex, maxIndex);
+	// ROS_INFO("Find closest started %f", scan_ptr->ranges[minIndex]);
 	float closestRange = scan_ptr->ranges[minIndex];
-	ROS_INFO("scan_ptr is not empty");
+	// ROS_INFO("scan_ptr is not empty");
 	for (int currIndex = minIndex; currIndex <= maxIndex; currIndex++) {
 
 		if (scan_ptr->ranges[currIndex] < closestRange) {
@@ -114,25 +114,23 @@ float Stopper::find_closest(int minIndex, int maxIndex){
 // decide which way to turn
 void Stopper::turn_sides(){
 
-	if(!scan_ptr){
-		float closestRange_left = find_closest(back_left, front_left);
-		float closestRange_right = find_closest(back_right, front_right);
+	
+	float closestRange_left = find_closest(back_left, front_left);
+	float closestRange_right = find_closest(back_right, front_right);
 
-		if(closestRange_left>=closestRange_right){
+	if(closestRange_left>=closestRange_right){
 
-			check_empty(back_left, front_left);  //check left side is empty before going it
+		check_empty(back_left, front_left);  //check left side is empty before going it
 
-			ROS_INFO("TURNING LEFT");
-			v_state = TURN_LEFT;
-		}
+		ROS_INFO("TURNING LEFT");
+		v_state = TURN_LEFT;
+	}
 
-		else if(closestRange_left<closestRange_right){
+	else if(closestRange_left<closestRange_right){
 
-			check_empty(back_right, front_right);   //check right side is empty before going it
-
-			ROS_INFO("TURNING RIGHT");
-			v_state = TURN_RIGHT;
-		}
+		check_empty(back_right, front_right);   //check right side is empty before going it
+		ROS_INFO("TURNING RIGHT");
+		v_state = TURN_RIGHT;
 	}
 
 }
@@ -159,7 +157,7 @@ void Stopper::startMoving()
 
 	// Keep spinning loop until user presses Ctrl+C or the robot got too close to an obstacle
 	while (ros::ok()) {
-		ROS_INFO("IN WHILE");
+		// ROS_INFO("IN WHILE");
 		if(v_state == FORWARD && scan_came){
 			ROS_INFO("check front");
 			check_front();

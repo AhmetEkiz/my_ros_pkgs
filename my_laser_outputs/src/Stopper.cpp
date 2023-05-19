@@ -30,13 +30,13 @@ void Stopper::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 	// int maxIndex = floor((MAX_SCAN_ANGLE_RAD - scan->angle_min) / scan->angle_increment);
 
 	int	minIndex = 0;
-	int maxIndex = 360;
+	int maxIndex = 359;
 
 	ROS_INFO("\nminIndex: %d\nmaxIndex: %d",minIndex, maxIndex);
 
 	float closestRange = scan->ranges[minIndex];
 	
-	for (int currIndex = minIndex + 1; currIndex <= maxIndex; currIndex++) {
+	for (int currIndex = minIndex; currIndex <= maxIndex; currIndex++) {
 
 		// ROS_INFO("\n[CURRENT]\n Index: %d\n Range: %f", currIndex, scan->ranges[currIndex]);
 		// ROS_INFO("\n Index: %d Range: %f", currIndex, scan->ranges[currIndex]);

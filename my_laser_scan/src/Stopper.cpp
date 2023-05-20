@@ -39,9 +39,11 @@ void Stopper::turn(){
 	geometry_msgs::Twist msg; // The default constructor will set all commands to 0
 	msg.linear.x = 0;
 
+	// TODO: converting ratio:
+	// http://wiki.ros.org/turtlesim/Tutorials/Rotating%20Left%20and%20Right
 	//Converting from angles to radians
- 	float angular_speed = FORWARD_SPEED_MPS*2*PI/360;
- 	float relative_angle = angle*2*PI/360;
+ 	float angular_speed = SPEED*2*PI/360;
+ 	float relative_angle = ANGLE*2*PI/360;
 
 	if(v_state == TURN_LEFT){
 		msg.angular.z = +relative_angle;
@@ -58,13 +60,12 @@ void Stopper::turn(){
   		commandPub.publish(msg);
 		t1 = ros::Time::now().toSec();
 		current_angle = angular_speed*(t1-t0);
+		ROS_INFO("current_angle: %f, relative_angle: %f, angular_speed: %f",current_angle, relative_angle, angular_speed);
 	}
-
-
-	// // TODO: Check vehicle is in the right pose. 
-	// ros::Duration(duration_to_turn).sleep();  // wait until turn
+	ROS_INFO("TURN IS OVER");
 	stop();
 	v_state == FORWARD;
+	ros::Duration(0.1).sleep();
 };
 
 // FUNCTIONS
@@ -188,4 +189,5 @@ void Stopper::startMoving()
 		ros::spinOnce(); // Need to call this function often to allow ROS to process incoming messages
 		rate.sleep();
 	}
+
 }

@@ -1,25 +1,27 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 
-enum State{
-	FORWARD,   // go forward
-	STOP_FORWARD,   // stop forward
-	TURN,  // need to turn, decide which way to turn
-	TURN_RIGHT, 
-	TURN_LEFT,
-	STOP_TURN,   // stop turn you were there
-	STOP,
-};
-
-
-
-const float PI = 3.1415926535897;
-
 class Stopper
 {
 public:
+
+	enum State{
+		FORWARD,   // go forward
+		STOP_FORWARD,   // stop forward
+		TURN,  // need to turn, decide which way to turn
+		TURN_RIGHT, 
+		TURN_LEFT,
+		STOP_TURN,   // stop turn you were there
+		STOP,
+	};
+
+	const float PI = 3.1415926535897;
+	
 	// Tunable parameters
-	static constexpr double FORWARD_SPEED_MPS = 0.2;  // degree/sec
+	static constexpr double FORWARD_SPEED_MPS = 0.2;  
+	static constexpr double SPEED = 10;   //degrees/sec
+	static constexpr double ANGLE = 90; //degrees
+
 	static constexpr double TURN_SPEED_MPS = 0.2;
 	const int duration_to_turn = 1;   // 1 second
 	const int angle = 90;  // angle to turn left or right
@@ -27,18 +29,18 @@ public:
 	static constexpr float MIN_PROXIMITY_RANGE_M = 0.3;  // Should be smaller than sensor_msgs::LaserScan::range_max
 
 	// my constants for laser scan indexes
-	// FRONT
+	// FRONT Laser Scan Indexes
 	const int right_front_start = 0;
 	const int right_front_end = 5;
 
 	const int left_front_start = 352;
 	const int left_front_end = 359;
 
-	// LEFT 
+	// LEFT Laser Scan Indexes
 	const int front_left = 94;
 	const int back_left = 82;
 
-	// RIGHT
+	// RIGHT Laser Scan Indexes
 	const int front_right = 276;
 	const int back_right = 264;
 

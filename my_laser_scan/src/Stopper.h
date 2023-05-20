@@ -19,21 +19,18 @@ public:
 	
 	// Tunable parameters
 	static constexpr double FORWARD_SPEED_MPS = 0.2;  
-	static constexpr double SPEED = 10;   //degrees/sec
-	static constexpr double ANGLE = 90; //degrees
 
-	static constexpr double TURN_SPEED_MPS = 0.2;
-	const int duration_to_turn = 1;   // 1 second
-	const int angle = 90;  // angle to turn left or right
+	static constexpr double TURN_SPEED_MPS = 0.3;
+	const int duration_to_turn = 2;   // 1 second
 
 	static constexpr float MIN_PROXIMITY_RANGE_M = 0.3;  // Should be smaller than sensor_msgs::LaserScan::range_max
 
 	// my constants for laser scan indexes
 	// FRONT Laser Scan Indexes
 	const int right_front_start = 0;
-	const int right_front_end = 5;
+	const int right_front_end = 9;    // default is 5
 
-	const int left_front_start = 352;
+	const int left_front_start = 348;    // default is 352
 	const int left_front_end = 359;
 
 	// LEFT Laser Scan Indexes
@@ -46,7 +43,6 @@ public:
 
 	sensor_msgs::LaserScan::ConstPtr scan_ptr;
 
-	// bool turn = false;  // is it turning right now?
 	State v_state = FORWARD;   //vehicle state
 
 	Stopper();

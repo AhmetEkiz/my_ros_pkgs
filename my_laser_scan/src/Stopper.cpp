@@ -31,6 +31,7 @@ void Stopper::stop(){
 	msg.linear.x = 0;
 	msg.angular.z = 0;
 	commandPub.publish(msg);
+	ROS_INFO("SPEEDS IS ZERO");
 };
 
 // turn vehicle left or right
@@ -41,31 +42,27 @@ void Stopper::turn(){
 
 	// TODO: converting ratio:
 	// http://wiki.ros.org/turtlesim/Tutorials/Rotating%20Left%20and%20Right
-	//Converting from angles to radians
- 	float angular_speed = SPEED*2*PI/360;
- 	float relative_angle = ANGLE*2*PI/360;
 
 	if(v_state == TURN_LEFT){
-		msg.angular.z = +relative_angle;
+		msg.angular.z = +TURN_SPEED_MPS;
 	}
 	else if(v_state == TURN_RIGHT){
-		msg.angular.z = -relative_angle;
+		msg.angular.z = -TURN_SPEED_MPS;
 	}
 
 	double t0 = ros::Time::now().toSec();
 	double t1;
 	float current_angle = 0;
 
-	while(current_angle < relative_angle){
+	while((t1-t0) < duration_to_turn){
   		commandPub.publish(msg);
 		t1 = ros::Time::now().toSec();
-		current_angle = angular_speed*(t1-t0);
-		ROS_INFO("current_angle: %f, relative_angle: %f, angular_speed: %f",current_angle, relative_angle, angular_speed);
 	}
+
 	ROS_INFO("TURN IS OVER");
 	stop();
-	v_state == FORWARD;
-	ros::Duration(0.1).sleep();
+	v_state = FORWARD;
+	// ros::Duration(0.1).sleep();
 };
 
 // FUNCTIONS

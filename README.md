@@ -1,6 +1,6 @@
 # My ROS Packages
 
-Simple ROS Noetic and turtlesim applications in C++.
+Simple ROS Noetic and turtlebot3 applications in C++.
 
 ![example](imgs/img.png)
 

@@ -21,12 +21,21 @@ void spinThread()
 
 int main(int argc, char **argv)
 {
-	// coordinates to go x,y,yaw
-	float coords[3][3] = {{6.3123, -4.4526, -50}, \
-                  {0.8100, 1.6451, 90}, \
-                  {-6.9616, -3.1483, -50}}; 
+	// // coordinates to go x,y,yaw
+	// float coords[3][3] = {{6.3123, -4.4526, -50}, \
+    //               {0.8100, 1.6451, 90}, \
+    //               {-6.9616, -3.1483, -50}}; 
+	
+	float coords[3][3] = {{4.8, -5.7, -50}, \
+						  {-0.4, 0.9, 90}, \
+						  {-7.75, -4.6, 50}}; 
 
-	float x, y, yaw;   // to store values  
+	// float coords[3][3] = {{9.1, -5.45, -50}, \
+    //               		  {0.8100, 1.6451, 90}, \
+    //               		  {-6.9616, -3.1483, -50}}; 
+
+	// init with first position
+	float x=-4.3, y=0.25, yaw;   // to store values  
 
 
 	ros::init(argc, argv, "simple_navigation_goals"); // created new node
@@ -46,16 +55,22 @@ int main(int argc, char **argv)
 
 	// message type 
 	move_base_msgs::MoveBaseGoal goal;
+	
+
+
+	// TODO: read position from topic
+	// move_base_msgs::MoveBaseGoal goal_prev;    // previous coordinates of vehicle
+
 
 	// calculate radian
 
 	for(int i=0; i<3; i++){
 
-		x = coords[i][0];
-		y = coords[i][1];
+		x = coords[i][0] - x;
+		y = coords[i][1] - y;
 		yaw = (coords[i][2]*(M_PI/180));    // convert radian
 
-		ROS_INFO("Sending: \nx: %f\ny: %f, \nyaw:%f",x,y,yaw);
+		ROS_INFO("\nSending: \nx: %f\ny: %f, \nyaw:%f",x,y,yaw);
 
 		// we'll send a goal to the robot to move 2 meters forward
 		goal.target_pose.header.frame_id = "base_link";
@@ -63,6 +78,9 @@ int main(int argc, char **argv)
 
 		goal.target_pose.pose.position.x = x;
 		goal.target_pose.pose.position.y = y;
+
+		ROS_INFO("\nPOSE: \nx: %f\ny: %f",goal.target_pose.pose.position.x, \
+													goal.target_pose.pose.position.y);
 
 		// this is not drone, so we need to pass just yaw orientation
 		goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
